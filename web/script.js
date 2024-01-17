@@ -12,15 +12,16 @@ if (navigator.mediaDevices) {
       height: { min: 720, ideal: 1080 },
     },
   };
-  let chunks = [];
 
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then((stream) => {
       const mediaRecorder = new MediaRecorder(stream);
+      let recordStart;
 
       record.onclick = () => {
-        mediaRecorder.start();
+        mediaRecorder.start(15000);
+        recordStart = new Date().toISOString();
         console.log(mediaRecorder.state);
         console.log("recorder started");
         record.style.background = "red";
@@ -35,18 +36,14 @@ if (navigator.mediaDevices) {
         record.style.color = "";
       };
 
-      mediaRecorder.onstop = (e) => {
-        console.log("data available after MediaRecorder.stop() called.");
-
-        const blob = new Blob(chunks, { type: "video/webm" });
-        chunks = [];
-        console.log("recorder stopped");
-      };
-
       mediaRecorder.ondataavailable = (e) => {
-        chunks.push(e.data);
         fetch("/upload", {
           method: "POST",
+          headers: {
+            "Content-Type": e.data.type,
+            "Content-Length": e.data.size,
+            "File-Name": recordStart,
+          },
           body: e.data,
         });
       };
