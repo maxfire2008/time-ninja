@@ -1,27 +1,5 @@
 "use strict";
 
-async function getWakeLock() {
-  if (navigator.wakeLock) {
-    let wakeLock;
-    try {
-      wakeLock = await navigator.wakeLock.request("screen");
-    } catch (err) {
-      console.log(err.name, err.message);
-    }
-    return wakeLock;
-  }
-}
-
-function release(wakeLock) {
-  console.log(wakeLock);
-  if (typeof wakeLock !== "undefined" && wakeLock !== null) {
-    wakeLock.release().then(() => {
-      console.log("Lock released 🎈");
-      wakeLock = null;
-    });
-  }
-}
-
 let mediaRecorder;
 
 if (navigator.mediaDevices) {
@@ -49,13 +27,11 @@ if (navigator.mediaDevices) {
         videoBitsPerSecond: 10000000,
       });
       let recordStart;
-      let wakeLock;
       let part = 0;
 
       document.getElementById("video").srcObject = stream;
 
       record.onclick = () => {
-        wakeLock = getWakeLock();
         mediaRecorder.start(15000);
         recordStart = new Date().toISOString();
         console.log(mediaRecorder.state);
@@ -71,7 +47,6 @@ if (navigator.mediaDevices) {
         console.log("recorder stopped");
         record.style.background = "";
         record.style.color = "";
-        release(wakeLock);
         saveState();
       };
 
