@@ -1,3 +1,5 @@
 **/__pycache__/**
 .DS_Store
 footage/**.webm
+recorder/cert.pem
+recorder/key.pem
