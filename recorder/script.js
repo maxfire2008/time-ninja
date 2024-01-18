@@ -29,6 +29,31 @@ if (navigator.mediaDevices) {
       let recordStart;
       let part = 0;
 
+      const [videoTrack] = stream.getVideoTracks();
+      if (videoTrack.getCapabilities !== undefined) {
+        const capabilities = videoTrack.getCapabilities();
+        const settings = videoTrack.getSettings();
+
+        if ("zoom" in settings) {
+          const zoomInput = document.getElementById("zoom");
+          zoomInput.min = capabilities.zoom.min;
+          zoomInput.max = capabilities.zoom.max;
+          zoomInput.step = capabilities.zoom.step;
+          zoomInput.value = settings.zoom;
+
+          zoomInput.addEventListener("change", async () => {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: zoomInput.value }],
+            });
+            saveState();
+          });
+
+          // zoom out to min
+          zoomInput.value = capabilities.zoom.min;
+          zoomInput.dispatchEvent(new Event("change"));
+        }
+      }
+
       document.getElementById("video").srcObject = stream;
 
       record.onclick = () => {
@@ -81,6 +106,7 @@ function saveState() {
   const eventSlug = document.getElementById("eventSlug").value;
   const state = {
     eventSlug: eventSlug,
+    zoom: document.getElementById("zoom").value,
     mediaRecorderState: mediaRecorder.state,
   };
   localStorage.setItem("state", JSON.stringify(state));
@@ -90,10 +116,12 @@ function restoreState() {
   const state = JSON.parse(localStorage.getItem("state"));
   if (state) {
     document.getElementById("eventSlug").value = state.eventSlug;
+    document.getElementById("zoom").value = state.zoom;
     if (state.mediaRecorderState === "recording") {
       setTimeout(() => {
+        document.getElementById("zoom").dispatchEvent(new Event("change"));
         document.getElementById("record").click();
-      }, 1000);
+      }, 5000);
     }
   }
 }
