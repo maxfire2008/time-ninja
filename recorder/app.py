@@ -1,6 +1,7 @@
 import flask
 import datetime
 import pathlib
+import transcode
 
 app = flask.Flask(__name__)
 
@@ -24,6 +25,8 @@ def web(path):
     "/upload/<string:event_slug>/<string:file_name>/<int:part_number>", methods=["POST"]
 )
 def upload(event_slug: str, file_name: str, part_number: int):
+    if event_slug == "" or event_slug is None:
+        event_slug = "default"
     address = flask.request.remote_addr
     if address == "127.0.0.1" and "X-Forwarded-For" in flask.request.headers:
         address = flask.request.headers["X-Forwarded-For"]
@@ -38,7 +41,7 @@ def upload(event_slug: str, file_name: str, part_number: int):
         / sanitize_text(event_slug)
         / sanitize_text(address)
         / sanitize_text(file_name)
-        / f"{part_number:08d}.webm"
+        / f"{part_number:08d}.mp4"
     )
 
     filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -46,4 +49,6 @@ def upload(event_slug: str, file_name: str, part_number: int):
     # append flask.request.get_data(cache=False) to file
     with filepath.open("ab") as f:
         f.write(flask.request.get_data(cache=False))
+
+    # transcode.transcode(filepath.parent)
     return "OK"

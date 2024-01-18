@@ -1,6 +1,8 @@
 import flask
 import pathlib
 import os
+import subprocess
+import io
 import re
 import yaml
 
@@ -67,9 +69,9 @@ def after_request(response):
 
 def get_chunk(path, byte1=None, byte2=None):
     video_files = {}
-    # get all webm files in path and write their sizes to video_files
+    # get all mp4 files in path and write their sizes to video_files
     for file in sorted(pathlib.Path(path).iterdir()):
-        if file.suffix == ".webm":
+        if file.suffix == ".mp4":
             video_files[file.name] = file.stat().st_size
 
     path = pathlib.Path(path)
@@ -127,12 +129,41 @@ def video(slug, host, recording):
     resp = flask.Response(
         chunk,
         206,
-        mimetype="video/webm",
-        content_type="video/webm",
+        mimetype="video/mp4",
+        content_type="video/mp4",
         direct_passthrough=True,
     )
     resp.headers.add(
         "Content-Range",
-        "bytes {0}-{1}".format(start, start + length - 1),
+        "bytes {0}-{1} / {2}".format(start, start + length - 1, file_size),
     )
     return resp
+
+
+@app.route("/video_duration/<string:slug>/<string:host>/<string:recording>")
+def video_duration(slug, host, recording):
+    file_path = (
+        pathlib.Path("../footage")
+        / sanitize_text(slug)
+        / sanitize_text(host)
+        / sanitize_text(recording)
+    )
+
+    # pipe the video (from it's chunks) to ffprobe to get the duration
+    ffprobe = subprocess.Popen(
+        ["ffprobe", "-"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+
+    for file in sorted(pathlib.Path(file_path).iterdir()):
+        if file.suffix == ".mp4":
+            with open(file, "rb") as f:
+                print(file.name)
+                ffprobe.stdin.write(f.read())
+
+    ffprobe.stdin.close()
+
+    duration = ffprobe.stdout.read().decode("utf-8")
+
+    return flask.Response(duration, mimetype="text/plain")

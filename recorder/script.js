@@ -22,9 +22,7 @@ if (navigator.mediaDevices) {
     .getUserMedia(constraints)
     .then((stream) => {
       mediaRecorder = new MediaRecorder(stream, {
-        videoKeyFrameIntervalDuration: 5,
-        videoKeyFrameIntervalCount: 300,
-        videoBitsPerSecond: 10000000,
+        videoBitsPerSecond: 5000000,
       });
       let recordStart;
       let part;
@@ -94,6 +92,7 @@ if (navigator.mediaDevices) {
           }
         );
         part += 1;
+        e.data = null;
       };
     })
     .catch((err) => {
