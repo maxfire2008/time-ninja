@@ -27,7 +27,7 @@ if (navigator.mediaDevices) {
         videoBitsPerSecond: 10000000,
       });
       let recordStart;
-      let part = 0;
+      let part;
 
       const [videoTrack] = stream.getVideoTracks();
       if (videoTrack.getCapabilities !== undefined) {
@@ -57,6 +57,7 @@ if (navigator.mediaDevices) {
       document.getElementById("video").srcObject = stream;
 
       record.onclick = () => {
+        part = 0;
         mediaRecorder.start(15000);
         recordStart = new Date().toISOString();
         console.log(mediaRecorder.state);

@@ -11,9 +11,9 @@
     All rights reserved</small>
     <h2>Events</h2>
     <ul>
-        {% for file in files %}
+        {% for filename, data in files.items() %}
             <li>
-                <a href="{{ file.link }}">{{ file.name }}</a>
+                <a href="{{ url_for('event', slug=filename) }}">{{ filename }} {{ data }}</a>
             </li>
         {% endfor %}
     </ul>

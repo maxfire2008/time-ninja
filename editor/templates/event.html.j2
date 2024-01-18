@@ -1,0 +1,18 @@
+{% extends "base.html.j2" %}
+{% block content %}
+    <h2>Recordings</h2>
+    {% for host, host_recordings in recordings.items() %}
+        {% for recording in host_recordings %}
+            <h3>{{ host }} - {{ recording }}</h3>
+            <video src="/video/{{ slug }}/{{ host }}/{{ recording }}"
+                   height="180"
+                   width="320"
+                   controls>
+            </video>
+        {% endfor %}
+    {% endfor %}
+    <h2>Metadata</h2>
+    <code>
+        {{ meta }}
+    </code>
+{% endblock %}
