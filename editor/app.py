@@ -149,21 +149,46 @@ def video_duration(slug, host, recording):
         / sanitize_text(recording)
     )
 
-    # pipe the video (from it's chunks) to ffprobe to get the duration
-    ffprobe = subprocess.Popen(
-        ["ffprobe", "-"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
+    # Create a list to store video chunks
+    video_chunks = []
 
+    # Collect video chunks
     for file in sorted(pathlib.Path(file_path).iterdir()):
         if file.suffix == ".mp4":
             with open(file, "rb") as f:
-                print(file.name)
-                ffprobe.stdin.write(f.read())
+                video_chunks.append(f.read())
 
-    ffprobe.stdin.close()
+    # Check if there are video chunks
+    if not video_chunks:
+        return flask.Response(
+            "No video chunks found", status=404, mimetype="text/plain"
+        )
 
-    duration = ffprobe.stdout.read().decode("utf-8")
+    # pipe the video chunks to ffprobe to get the duration
+    try:
+        ffprobe = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                "-",
+            ],
+            input=b"".join(video_chunks),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        # duration = ffprobe.stdout.decode()
+        duration = 0  # ffprobe is NOT giving the correct duration (always 15 seconds)
+    except subprocess.CalledProcessError as e:
+        return flask.Response(
+            f"Error running ffprobe: {e.stderr.decode()}",
+            status=500,
+            mimetype="text/plain",
+        )
 
     return flask.Response(duration, mimetype="text/plain")
