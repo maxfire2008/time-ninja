@@ -21,7 +21,7 @@ if (navigator.mediaDevices) {
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then((stream) => {
-      mediaRecorder = new MediaRecorder(stream, {
+      mediaRecorder = new RecordRTC(stream, {
         videoBitsPerSecond: 5000000,
       });
       let recordStart;
@@ -56,7 +56,7 @@ if (navigator.mediaDevices) {
 
       record.onclick = () => {
         part = 0;
-        mediaRecorder.start(15000);
+        mediaRecorder.startRecording();
         recordStart = new Date().toISOString();
         console.log(mediaRecorder.state);
         console.log("recorder started");
@@ -66,7 +66,7 @@ if (navigator.mediaDevices) {
       };
 
       stop.onclick = () => {
-        mediaRecorder.stop();
+        mediaRecorder.stopRecording();
         console.log(mediaRecorder.state);
         console.log("recorder stopped");
         record.style.background = "";
