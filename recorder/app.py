@@ -1,7 +1,8 @@
 import flask
 import datetime
 import pathlib
-import transcode
+import subprocess
+import sys
 
 app = flask.Flask(__name__)
 
@@ -50,5 +51,13 @@ def upload(event_slug: str, file_name: str, part_number: int):
     with filepath.open("ab") as f:
         f.write(flask.request.get_data(cache=False))
 
-    # transcode.transcode(filepath.parent)
+    subprocess.run(
+        [
+            sys.executable,
+            "transcode.py",
+            str(filepath.parent),
+        ],
+        check=False,
+    )
+
     return "OK"
