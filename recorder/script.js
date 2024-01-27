@@ -23,6 +23,7 @@ if (navigator.mediaDevices) {
     .then((stream) => {
       mediaRecorder = new MediaRecorder(stream, {
         videoBitsPerSecond: 5000000,
+        mimeType: "video/mp4;codecs=avc1,mp4a",
       });
       let recordStart;
       let part;
