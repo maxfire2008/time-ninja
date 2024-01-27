@@ -152,4 +152,4 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"Error: {e}")
             print("========\n\n")
-        time.sleep(max(0, 30 - (time.time() - pstart)))
+        time.sleep(max(2, 30 - (time.time() - pstart)))
