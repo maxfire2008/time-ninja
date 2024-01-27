@@ -1,6 +1,7 @@
 import pathlib
 import random
 import sys
+import subprocess
 
 
 def concat(directory: pathlib.Path) -> bool:
@@ -51,11 +52,54 @@ def concat_all(directory: pathlib.Path) -> None:
         pass
 
 
-def transcode(directory: pathlib.Path) -> None:
-    # ffmpeg -i all.mp4 -c:v h264_videotoolbox -c:a aac -b:v 25M  -hls_time 10 -hls_flags append_list -hls_list_size 0 -f hls output.m3u8
-    # or perhaps ffmpeg -i all.mp4 -ss 0 -to 10 -c:v h264_videotoolbox -c:a aac -b:v 25M enc00000000.ts
+def transcode_all(directory: pathlib.Path) -> None:
+    # ffmpeg -i all.mp4 -ss 0 -to 10 -c:v h264_videotoolbox -c:a aac -b:v 25M enc00000000.ts
 
-    pass
+    # get the length of all.mp4
+
+    ffprobe_duration = subprocess.run(
+        [
+            "ffprobe",
+            "-show_entries",
+            "format=duration",
+            "-v",
+            "quiet",
+            "-of",
+            "csv=p=0",
+            str(directory / "all.mp4"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    duration = float(ffprobe_duration.stdout)
+
+    print(duration)
+
+    # split into 10 second chunks
+    for i in range(0, int((duration // 10) - 1)):
+        output_file = directory / f"enc{i:08d}.ts"
+        if output_file.exists():
+            continue
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i",
+                str(directory / "all.mp4"),
+                "-ss",
+                str(i),
+                "-to",
+                str(i + 10),
+                "-c:v",
+                "h264_videotoolbox",
+                "-c:a",
+                "aac",
+                "-b:v",
+                "25M",
+                str(output_file),
+            ],
+            check=True,
+        )
 
 
 if __name__ == "__main__":
@@ -65,3 +109,4 @@ if __name__ == "__main__":
 
     dir = pathlib.Path(sys.argv[1])
     concat_all(dir)
+    transcode_all(dir)
