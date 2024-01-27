@@ -87,12 +87,14 @@ def transcode_all(directory: pathlib.Path) -> None:
     subprocess.run(
         [
             "ffmpeg",
+            # "-loglevel",
+            # "debug",
             "-i",
             "all.mp4",
             "-ss",
             str(duration),
             "-c:v",
-            "hevc_videotoolbox",
+            "h264_videotoolbox",
             "-c:a",
             "aac",
             "-b:v",
