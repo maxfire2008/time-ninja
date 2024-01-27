@@ -122,6 +122,7 @@ if __name__ == "__main__":
     recording_dirs = set()
 
     while True:
+        pstart = time.time()
         print("Checking for new recordings...")
         recording_dirs_before = len(recording_dirs)
         files = list(dir.glob("**/*.mp4"))
@@ -151,4 +152,4 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"Error: {e}")
             print("========\n\n")
-        time.sleep(30)
+        time.sleep(max(0, 30 - (time.time() - pstart)))
