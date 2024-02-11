@@ -7,25 +7,39 @@
             <h3>{{ host }} - {{ recording }}</h3>
             <video width="600" id="{{ recording }}" controls>
             </video>
+            <p id="duration{{ recording }}"></p>
             <script>
-                var video = document.getElementById("{{ recording }}");
+                var video{{ recording }} = document.getElementById("{{ recording }}");
                 if (Hls.isSupported()) {
                     var hls = new Hls({
                     debug: true,
                     });
                     hls.loadSource("/video/{{ slug }}/{{ host }}/{{ recording }}/index.m3u8");
-                    hls.attachMedia(video);
+                    hls.attachMedia(video{{ recording }});
                     hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                    video.muted = true;
-                    video.play();
+                    video{{ recording }}.muted = true;
+                    video{{ recording }}.pause();
                     });
                 }
-                else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                    video.src = "/video/{{ slug }}/{{ host }}/{{ recording }}/index.m3u8";
-                    video.addEventListener("canplay", function () {
-                    video.play();
+                else if (video{{ recording }}.canPlayType("application/vnd.apple.mpegurl")) {
+                    video{{ recording }}.src = "/video/{{ slug }}/{{ host }}/{{ recording }}/index.m3u8";
+                    video{{ recording }}.addEventListener("canplay", function () {
                     });
                 }
+                var duration{{ recording }} = document.getElementById("duration{{ recording }}");
+
+                // every time the video time updates, update the duration field to be the current time
+                video{{ recording }}.addEventListener("timeupdate", function () {
+                    // parse a date like 2024_02_01T07_21_17_832Z
+                    parts = "{{ recording }}".split("_");
+                    iso_date = parts[0] + "-" + parts[1] + "-" + parts[2] + ":" + parts[3] + ":" + parts[4] + "." + parts[5];
+                    var date = new Date(iso_date);
+                    // add the current time to the date object
+                    date.setMilliseconds(date.getMilliseconds() + (video{{ recording }}.currentTime * 1000));
+                    // format the date object to be "2024-02-01 07:07:55"
+                    var formatted_date = date.toISOString().replace("T", " ").replace("Z", "");
+                    duration{{ recording }}.innerHTML = formatted_date;
+                });
             </script>
         {% endfor %}
     {% endfor %}

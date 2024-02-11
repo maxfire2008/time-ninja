@@ -30,7 +30,7 @@ def concat(directory: pathlib.Path) -> bool:
             out.write(next.read())
 
     # delete the next file
-    # next_file.unlink()
+    next_file.unlink()
 
     # increment the next tracker
     next_tracker += 1
